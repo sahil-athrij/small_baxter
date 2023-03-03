@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Control Lucy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+            integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+            crossorigin="anonymous"></script>
+
+
+</head>
+<body>
+<div class="container">
+    <h2>Helper Robot Controls</h2>
+    <div class="row">
+        <div class="col-1"></div>
+        <button class="btn btn-success col-1" onclick="send_action('forward')">
+            forward
+        </button>
+    </div>
+    <div class="row">
+
+        <button class="btn btn-primary col-1" onclick="send_action('left')">
+            left
+        </button>
+        <button class="btn btn-outline-secondary  col-1" onclick="send_action('backward')">
+
+            backward
+
+        </button>
+        <button class="btn btn-primary col-1" onclick="send_action('right')">
+            right
+        </button>
+        <div class="col-1"></div>
+        <button class="btn btn-dark col-1" onclick="send_action('pickup')">
+            pickup
+        </button>
+    </div>
+    <div class="row">
+        <div class="col-1"></div>
+        <button class="btn btn-danger col-1" onclick="send_action('stop')">
+            Stop
+        </button>
+    </div>
+    <div class="col">
+        <img id="img" src="">
+    </div><div class="col">
+        <img id="img1" src="">
+    </div>
+</div>
+
+<script>
+    function send_action(action) {
+        const data = {direction: action};
+
+        fetch('/move/', {
+            method: 'POST', // or 'PUT'
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+    var socket = io();
+    socket.on('connect', function () {
+        socket.emit('my event', {data: 'I\'m connected!'});
+    });
+
+    socket.on('robot_image', function (data) {
+
+        var arrayBufferView = new Uint8Array(data['frames']);
+        var blob = new Blob([arrayBufferView], {type: "image/jpeg"});
+
+        var img_url = URL.createObjectURL(blob);
+        document.getElementById("img").src = img_url;
+
+    })
+
+    socket.on('location', function (data) {
+
+        var arrayBufferView = new Uint8Array(data['frames']);
+        var blob = new Blob([arrayBufferView], {type: "image/jpeg"});
+
+        var img_url = URL.createObjectURL(blob);
+        document.getElementById("img1").src = img_url;
+
+    })
+</script>
+</body>
+</html>
